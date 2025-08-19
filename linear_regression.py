@@ -1,4 +1,5 @@
 import random
+from random import shuffle
 import matplotlib.pyplot as plt
 
 # vstupni data
@@ -53,3 +54,29 @@ plt.grid(True)
 
 # otevrit graf
 plt.show()
+
+
+def normalize(lst):
+    min_val = min(lst)
+    max_val = max(lst)
+    return [(x - min_val) / (max_val - min_val) for x in lst]
+
+
+x_norm = normalize(x)
+
+def mse(y_true, y_pred):
+    n = len(y_true)
+    return sum((yt - yp)**2 for yt, yp in zip(y_true, y_pred)) / n
+
+print("MSE:", mse(y, y_pred))
+
+
+data = list(zip(x,y))
+shuffle(data)
+split = int(0.8*len(data))
+
+train = data[:split]
+test = data[split:]
+
+x_train, y_train = zip(*train)
+x_test, y_test = zip(*test)
