@@ -55,7 +55,7 @@ plt.grid(True)
 # otevrit graf
 plt.show()
 
-
+# normalizace dat
 def normalize(lst):
     min_val = min(lst)
     max_val = max(lst)
@@ -64,19 +64,23 @@ def normalize(lst):
 
 x_norm = normalize(x)
 
-def mse(y_true, y_pred):
+# vypocitani mean squared error
+def mse(y_true, y_p):
     n = len(y_true)
-    return sum((yt - yp)**2 for yt, yp in zip(y_true, y_pred)) / n
+    return sum((yt - yp)**2 for yt, yp in zip(y_true, y_p)) / n
 
 print("MSE:", mse(y, y_pred))
 
-
+# ROZDELENI DAT NA TRAIN A TEST
+# zamicha data
 data = list(zip(x,y))
 shuffle(data)
-split = int(0.8*len(data))
 
-train = data[:split]
-test = data[split:]
+# rozdeli data na 80%-20% split
+split = int(0.8*len(data)) # index na poloze 80% z celych dat
+
+train = data[:split] # vsechno az po index
+test = data[split:] # od indexu dale
 
 x_train, y_train = zip(*train)
 x_test, y_test = zip(*test)
