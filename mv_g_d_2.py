@@ -6,16 +6,19 @@ X = np.random.rand(100, 3)  # 100 vzorků, 3 featury
 true_w = np.array([3, -2, 5])
 true_b = 4
 y = X @ true_w + true_b + np.random.randn(100) * 0.5  # přidáme šum
+# numpy.random.randn vygeneruje nahodne cislo z gaussovy krivky
+# + true_b = pripad "broadcastingu", neboli NumPy automaticky pricte 1 cislo ke kazdemu ze 100 radku
+# + np.random.randn(100) = taky broadcasting, je to stejna hodnota jako tech 100 radku, u jine hodnoty se kod rozbije
 
 # Inicializace parametrů
-w = np.zeros(3)
+w = np.zeros(3)  # w = [0, 0, 0]
 b = 0.0
-lr = 0.1
+lr = 0.1  # learning rate
 epochs = 1000
 
 # Gradient descent
 for epoch in range(epochs):
-    y_pred = X @ w + b
+    y_pred = X @ w + b  # @ je dot product operator, jako .dot()
     error = y - y_pred
 
     # gradienty
@@ -27,7 +30,9 @@ for epoch in range(epochs):
     b -= lr * db
 
     if epoch % 100 == 0:
-        mse = np.mean(error**2)
+        mse = np.mean(
+            error**2
+        )  # numpy.mean() vypocita prumer kdyz do nej vlozime array
         print(f"Epoch {epoch}: MSE={mse:.4f}")
 
 print("Naučené váhy:", w)
