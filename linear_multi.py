@@ -126,5 +126,82 @@ def fit_linear_gd(
 if (
     __name__ == "__main__"
 ):  # Zajistí, že tenhle blok běží jen když soubor spouštíš přímo, ne při importu.
-    np.random.seed(2)
-    
+    np.random.seed(
+        2
+    )  # Nastaví globální RNG v np.random (starší API) pro opakovatelnost v části, kde ho používáme (rand, randn). Ano, výše jsme použili novější default_rng v train_test_split; obě cesty jsou platné.
+    n, d = 200, 3  # Počet vzorků a featur v syntetických datech.
+    X = np.random.rand(
+        n, d
+    )  # Matice X tvaru (200, 3), hodnoty z uniformního rozdělení na intervalu [0, 1).
+    true_w = np.array(
+        [3.0, -2.0, 5.0]
+    )  # Skutečné váhy, kterými generujeme cílové y. Tvar (3,).
+    true_b = 4.0  # Skutečný bias
+    noise = np.random.randn(n) * 0.5  # Gaussovský šum
+    # Vektor šumu tvaru (200,) ze standardní normální N(0,1), škálovaný na směrodatnou odchylku 0.5.
+    y = (
+        X @ true_w + true_b + noise
+    )  # Vytvoří cílové hodnoty: perfektní lineární model plus šum.
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.25, seed=7
+    )  # Rozdělí na 75 % trénink, 25 % test. Jiný seed, ať vidíš, že split a generování dat jsou nezávislé.
+    X_train_s, mean, std = standardize(
+        X_train
+    )  # Standardizace tréninku: vrátí škálovaná data a statistiky po sloupcích.
+    X_test_s = apply_standardize(
+        X_test, mean, std
+    )  # Aplikuje stejné škálování na test (nepočítáme mean/std z testu, žádný leakage).
+    print("=== Bez regularizace ===")  # Dekorativní pruh. Abys věděl, co se právě děje.
+    w, b = fit_linear_gd(X_train_s, y_train, lr=0.1, epochs=1000, verbose_every=200)
+    # Trénuje čistý MSE model:
+    #   X_train_s: škálované featury,
+    #   lr=0.1, epochs=1000,
+    #   bez L1/L2.
+    y_pred_train = predict(X_train_s, w, b)  # Predikce na tréninku.
+    y_pred_test = predict(X_test_s, w, b)  # Predikce na testu.
+    print("\nTrénink:")  # Jen text na přehlednost.
+    print(
+        f"  MSE={mse(y_train, y_pred_train):.4f}  RMSE={rmse(y_train, y_pred_train):.4f}  MAE={mae(y_train, y_pred_train):.4f}  R2={r2(y_train, y_pred_train):.4f}"
+    )  # Vytiskne čtyři metriky na tréninku.
+    print("Test:")  # Hlavička pro test.
+    print(
+        f"  MSE={mse(y_test, y_pred_test):.4f}  RMSE={rmse(y_test, y_pred_test):.4f}  MAE={mae(y_test, y_pred_test):.4f}  R2={r2(y_test, y_pred_test):.4f}"
+    )  # A totéž pro test. Pokud je R2 na testu výrazně horší než na train, přeučuješ. Pokud jsou oba bídné, model je poddimenzovaný nebo data jsou chaos.
+    print(
+        f"Váhy w (na škálovaných featurách): {w}"
+    )  # Vytiskne naučené váhy. Pozor: tohle jsou váhy ve škálovaném prostoru. Nejsou přímo srovnatelné s true_w, protože jsme standardizovali X.
+    print(f"Bias b: {b:.4f}")  # Vytiskne bias (opět ve škálovaném prostoru).
+    print("\n=== Ridge (L2=0.1) ===")  # Začátek tréninku s L2.
+    w_r, b_r = fit_linear_gd(
+        X_train_s, y_train, lr=0.1, epochs=1000, l2=0.1, verbose_every=200
+    )  # Trénink s Ridge penalizací. Stejný lr, epochs, jen l2=0.1.
+    y_pred_test_r = predict(X_test_s, w_r, b_r)  # Predikce Ridge modelu na testu.
+    print(
+        f"Test R2: {r2(y_test, y_pred_test_r):.4f}  | w={w_r}, b={b_r:.4f}"
+    )  # Rychlé shrnutí výkonu a koeficientů.
+    print("\n=== Lasso (L1=0.05) ===")  # Začátek tréninku s L1.
+    w_l, b_l = fit_linear_gd(
+        X_train_s, y_train, lr=0.05, epochs=1200, l1=0.05, verbose_every=300
+    )  # Lasso trénink:
+    #   menší lr (L1 bývá ostřejší),
+    #   víc epoch, aby to doběhlo do rozumné konvergence,
+    #   l1=0.05 penalizace.
+    y_pred_test_l = predict(X_test_s, w_l, b_l)  # Predikce Lasso modelu na testu.
+    print(
+        f"Test R2: {r2(y_test, y_pred_test_l):.4f}  | w={w_l}, b={b_l:.4f}"
+    )  # Výsledky Lasso. U Lassa často uvidíš některé váhy přesně nula, pokud feature nic nepřináší.
+
+# Drobné, ale důležité detaily navíc
+# ýpočetní složitost jedné epochy je ~ 𝑂(𝑛𝑑) (matice-vektor věci).
+
+#   Standardizace a váhy: pokud chceš koeficienty v původní škále, převeď je zpět (viz poznámka u tisku vah).
+
+#   Konvergence: když MSE neklesá, sniž lr; když osciluje, taky sniž; když klesá moc pomalu, zvýš.
+
+#   Regularizace:
+
+#       L2 „zmenšuje“ všechny váhy hladce.
+
+#       L1 tlačí malé váhy k nule, čímž dělá implicitní výběr featur.
+
+#   Bias nikdy neregularizuj. Není to „složitost“ modelu, je to posun.
