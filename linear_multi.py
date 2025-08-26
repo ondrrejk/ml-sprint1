@@ -192,7 +192,7 @@ if (
     )  # Výsledky Lasso. U Lassa často uvidíš některé váhy přesně nula, pokud feature nic nepřináší.
 
 # Drobné, ale důležité detaily navíc
-# ýpočetní složitost jedné epochy je ~ 𝑂(𝑛𝑑) (matice-vektor věci).
+# Výpočetní složitost jedné epochy je ~ 𝑂(𝑛𝑑) (matice-vektor věci).
 
 #   Standardizace a váhy: pokud chceš koeficienty v původní škále, převeď je zpět (viz poznámka u tisku vah).
 
