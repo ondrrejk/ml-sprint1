@@ -17,7 +17,7 @@ tree = DecisionTreeClassifier(max_depth=3, random_state=42)
 tree.fit(X, y)
 
 # 3. Vizualizace stromu
-plt.figure(figsize=(12, 8))
+plt.figure(figsize=(8, 4))
 plot_tree(
     tree, filled=True, feature_names=["feature1", "feature2"], class_names=["0", "1"]
 )
