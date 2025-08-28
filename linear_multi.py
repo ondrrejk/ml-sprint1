@@ -118,7 +118,7 @@ def fit_linear_gd(
             loss = mse(y, y_pred)
             print(f"epoch {epoch:4d}  MSE={loss:.6f}")
             # Logování průběhu. Pomáhá chytat „jojo efekt“ gradientu a další katastrofy.
-        return w, b  # Vrátí naučené koeficienty.
+    return w, b  # Vrátí naučené koeficienty.
 
 
 # Demo (spouští se jen při python linear_multi.py)
